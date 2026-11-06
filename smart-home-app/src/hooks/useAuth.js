@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { registerUser } from "../services/api";
+import { registerUser, loginUser } from "../services/api";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export function useAuth() {
     try {
       setLoading(true);
       await registerUser({ name, email, password, lockCode });
-      onSuccess(); // Chama a função para mudar de tela se der certo
+      onSuccess();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -38,10 +38,29 @@ export function useAuth() {
     }
   };
 
-  
-  const handleLogin = (email, password, onSuccess) => {
+  // --- LOGIN REAL COM VALIDAÇÃO E CONSULTA À API ---
+  const handleLogin = async (email, password, onSuccess) => {
+    setError(null);
 
-    onSuccess(); 
+    if (!email || !email.trim()) {
+      setError("Digite o seu e-mail.");
+      return;
+    }
+
+    if (!password) {
+      setError("Digite a sua senha.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await loginUser({ email, password });
+      onSuccess();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
