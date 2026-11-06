@@ -1,7 +1,12 @@
 import React, { useState } from "react";
-import { SafeAreaView, View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../hooks/useAuth";
+
+// Importando os novos componentes
+import { CustomInput } from "../components/CustomInput";
+import { CustomButton } from "../components/CustomButton";
+import { ErrorMessage } from "../components/ErrorMessage";
 
 export function RegisterScreen({ navigation }) {
   const { colors } = useTheme();
@@ -23,6 +28,7 @@ export function RegisterScreen({ navigation }) {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
           <View style={styles.headerSection}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backAction}>
               <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
@@ -32,71 +38,57 @@ export function RegisterScreen({ navigation }) {
               <Text style={[styles.pageSubtitle, { color: colors.primary }]}>NOVO DISPOSITIVO</Text>
             </View>
           </View>
+
           <View style={styles.formWrapper}>
             <Text style={[styles.instruction, { color: colors.muted }]}>
               Preencha os dados para vincular o sistema SmartHome ao seu aplicativo.
             </Text>
-            {error && (
-              <View style={styles.alertBox}>
-                <Text style={styles.alertText}>{error}</Text>
-              </View>
-            )}
+            
+            <ErrorMessage message={error} />
+
             <View style={styles.inputList}>
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>NOME DE EXIBIÇÃO</Text>
-                <TextInput
-                  style={[styles.textInput, { backgroundColor: colors.card, color: colors.text }]}
-                  placeholder="Seu nome completo"
-                  placeholderTextColor={colors.muted}
-                  value={name}
-                  onChangeText={setName}
-                />
-              </View>
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>CREDENCIAL DE ACESSO</Text>
-                <TextInput
-                  style={[styles.textInput, { backgroundColor: colors.card, color: colors.text }]}
-                  placeholder="E-mail principal"
-                  placeholderTextColor={colors.muted}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-              </View>
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>CHAVE DE SEGURANÇA</Text>
-                <TextInput
-                  style={[styles.textInput, { backgroundColor: colors.card, color: colors.text }]}
-                  placeholder="Mínimo de 8 caracteres"
-                  placeholderTextColor={colors.muted}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                />
-              </View>
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>CÓDIGO DE HARDWARE</Text>
-                <TextInput
-                  style={[styles.textInput, { backgroundColor: colors.card, color: colors.text, borderColor: colors.primary, borderWidth: 1 }]}
-                  placeholder="Código de fábrica (8 dígitos)"
-                  placeholderTextColor={colors.muted}
-                  value={lockCode}
-                  onChangeText={setLockCode}
-                  keyboardType="number-pad"
-                  maxLength={8}
-                />
-              </View>
+              <CustomInput
+                label="NOME DE EXIBIÇÃO"
+                placeholder="Seu nome completo"
+                value={name}
+                onChangeText={setName}
+              />
+              
+              <CustomInput
+                label="CREDENCIAL DE ACESSO"
+                placeholder="E-mail principal"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              
+              <CustomInput
+                label="CHAVE DE SEGURANÇA"
+                placeholder="Mínimo de 8 caracteres"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+              
+              <CustomInput
+                label="CÓDIGO DE HARDWARE"
+                placeholder="Código de fábrica (8 dígitos)"
+                value={lockCode}
+                onChangeText={setLockCode}
+                keyboardType="number-pad"
+                maxLength={8}
+                highlightBorder={true}
+              />
             </View>
-            <TouchableOpacity 
-              style={[styles.submitButton, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }]} 
+
+            <CustomButton 
+              title={loading ? "Processando..." : "Vincular Sistema"}
               onPress={onRegister}
-              disabled={loading}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.submitButtonText}>{loading ? "Processando..." : "Vincular Sistema"}</Text>
-            </TouchableOpacity>
+              loading={loading}
+            />
           </View>
+
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -147,55 +139,8 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 32,
   },
-  alertBox: {
-    backgroundColor: "rgba(217, 75, 75, 0.1)",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: "rgba(217, 75, 75, 0.3)",
-  },
-  alertText: {
-    color: "#D94B4B",
-    fontWeight: "600",
-    fontSize: 14,
-    textAlign: "center",
-  },
   inputList: {
     gap: 24,
     marginBottom: 40,
   },
-  inputContainer: {
-    gap: 8,
-  },
-  inputLabel: {
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 1,
-    marginLeft: 4,
-  },
-  textInput: {
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-    borderRadius: 12,
-    fontSize: 16,
-  },
-  submitButton: {
-    paddingVertical: 20,
-    borderRadius: 12,
-    alignItems: "center",
-    shadowColor: "#3478D4",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  submitButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "800",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
 });
-

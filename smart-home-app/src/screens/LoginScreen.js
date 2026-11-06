@@ -1,7 +1,12 @@
 import React, { useState } from "react";
-import { SafeAreaView, View, Text, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../hooks/useAuth";
+
+// Importando os componentes modulares criados anteriormente
+import { CustomInput } from "../components/CustomInput";
+import { CustomButton } from "../components/CustomButton";
+import { ErrorMessage } from "../components/ErrorMessage";
 
 export function LoginScreen({ navigation }) {
   const { colors } = useTheme();
@@ -21,44 +26,41 @@ export function LoginScreen({ navigation }) {
         style={styles.keyboardView}
       >
         <View style={styles.formContainer}>
+          
           <View style={styles.headerContainer}>
             <Text style={[styles.brandTitle, { color: colors.text }]}>SmartHome</Text>
             <Text style={[styles.brandSubtitle, { color: colors.primary }]}>Fatec Atibaia</Text>
             <Text style={[styles.instructionText, { color: colors.muted }]}>Acesse seu painel de controle</Text>
           </View>
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          )}
+
+          <ErrorMessage message={error} />
+
           <View style={styles.inputGroup}>
-            <TextInput
-              style={[styles.inputField, { backgroundColor: colors.card, color: colors.text, borderColor: colors.card }]}
-              placeholder="E-mail"
-              placeholderTextColor={colors.muted}
+            <CustomInput
+              label="E-MAIL DE ACESSO"
+              placeholder="Digite seu e-mail"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
             />
-            <TextInput
-              style={[styles.inputField, { backgroundColor: colors.card, color: colors.text, borderColor: colors.card }]}
-              placeholder="Senha"
-              placeholderTextColor={colors.muted}
+            
+            <CustomInput
+              label="SENHA"
+              placeholder="Digite sua senha"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
             />
           </View>
-          <TouchableOpacity 
-            style={[styles.primaryButton, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }]} 
+
+          <CustomButton 
+            title={loading ? "Autenticando..." : "Entrar no Sistema"}
             onPress={onLogin}
-            disabled={loading}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.primaryButtonText}>{loading ? "Autenticando..." : "Entrar no Sistema"}</Text>
-          </TouchableOpacity>
+            loading={loading}
+          />
+
           <TouchableOpacity 
             style={styles.secondaryAction} 
             onPress={() => navigation.navigate("Register")}
@@ -68,6 +70,7 @@ export function LoginScreen({ navigation }) {
               Novo usuário? <Text style={{ color: colors.primary, fontWeight: "700" }}>Registrar dispositivo</Text>
             </Text>
           </TouchableOpacity>
+
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -105,45 +108,9 @@ const styles = StyleSheet.create({
   instructionText: {
     fontSize: 15,
   },
-  errorContainer: {
-    backgroundColor: "rgba(217, 75, 75, 0.1)",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 24,
-    borderLeftWidth: 4,
-    borderLeftColor: "#D94B4B",
-  },
-  errorText: {
-    color: "#D94B4B",
-    fontWeight: "600",
-    fontSize: 14,
-  },
   inputGroup: {
-    gap: 16,
+    gap: 24, // Espaçamento ajustado para comportar as labels do CustomInput
     marginBottom: 32,
-  },
-  inputField: {
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-    borderRadius: 12,
-    fontSize: 16,
-    borderWidth: 1,
-  },
-  primaryButton: {
-    paddingVertical: 18,
-    borderRadius: 12,
-    alignItems: "center",
-    shadowColor: "#3478D4",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.5,
   },
   secondaryAction: {
     marginTop: 32,
@@ -153,4 +120,3 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 });
-

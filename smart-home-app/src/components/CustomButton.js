@@ -2,33 +2,41 @@ import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 
-export function CustomButton({ label, onPress, disabled, loading, online }) {
+export function CustomButton({ title, onPress, disabled, loading }) {
   const { colors } = useTheme();
-  const unavailable = disabled || loading || !online;
+  const isUnavailable = disabled || loading;
 
   return (
     <TouchableOpacity
-      onPress={onPress}
-      disabled={unavailable}
       style={[
-        styles.button,
-        { backgroundColor: colors.primary },
-        unavailable && { opacity: 0.45 }
+        styles.submitButton,
+        { backgroundColor: colors.primary, opacity: isUnavailable ? 0.7 : 1 }
       ]}
+      onPress={onPress}
+      disabled={isUnavailable}
+      activeOpacity={0.8}
     >
-      <Text style={styles.buttonText}>{label}</Text>
+      <Text style={styles.submitButtonText}>{title}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    padding: 14,
+  submitButton: {
+    paddingVertical: 20,
     borderRadius: 12,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  buttonText: {
-    color: "#FFF",
-    fontWeight: "bold",
+  submitButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
 });
