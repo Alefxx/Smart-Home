@@ -7,7 +7,7 @@ export function Footer() {
 
   return (
     <View style={styles.footerContainer}>
-      <Text style={[styles.footerText, { color: colors.muted }]}>Fatec Atibaia</Text>
+      <Text style={[styles.footerText, { color: colors.muted }]}></Text>
       <Text style={[styles.footerText, { color: colors.muted, fontSize: 12 }]}>
         ESP32 • MQTT • React Native
       </Text>

@@ -1,4 +1,4 @@
-export const SERVER = "http://127.0.0.1:3000";
+export const SERVER = "http://10.68.75.140:3000";
 
 export const fetchStatus = async () => {
   const response = await fetch(`${SERVER}/status`);

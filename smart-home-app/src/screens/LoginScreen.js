@@ -29,7 +29,7 @@ export function LoginScreen({ navigation }) {
           
           <View style={styles.headerContainer}>
             <Text style={[styles.brandTitle, { color: colors.text }]}>SmartHome</Text>
-            <Text style={[styles.brandSubtitle, { color: colors.primary }]}>Fatec Atibaia</Text>
+            <Text style={[styles.brandSubtitle, { color: colors.primary }]}></Text>
             <Text style={[styles.instructionText, { color: colors.muted }]}>Acesse seu painel de controle</Text>
           </View>
 
