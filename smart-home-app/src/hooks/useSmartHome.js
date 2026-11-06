@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchStatus, sendCommand } from "../services/api";
+import { useAuthContext } from "../contexts/AuthContext";
 
 export function useSmartHome() {
   const [led, setLed] = useState(null);
@@ -7,6 +8,8 @@ export function useSmartHome() {
   const [doorAction, setDoorAction] = useState(null);
   const [online, setOnline] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const { user } = useAuthContext();
 
   useEffect(() => {
     let active = true;
@@ -37,10 +40,10 @@ export function useSmartHome() {
     };
   }, []);
 
-  const requestAction = async (path, optimisticUpdate) => {
+  const requestAction = async (path, optimisticUpdate, payload = null) => {
     try {
       setLoading(true);
-      await sendCommand(path);
+      await sendCommand(path, payload);
       optimisticUpdate();
     } catch {
       alert("Erro ao conectar ao Smart Home.");
@@ -55,9 +58,19 @@ export function useSmartHome() {
 
   const operateDoor = () => {
     const isOpening = !door;
-    requestAction(isOpening ? "/door/open" : "/door/close", () => {
-      setDoorAction(isOpening ? "opening" : "closing");
-    });
+    const path = isOpening ? "/door/open" : "/door/close";
+
+    // Envia os dados do usuário para o servidor registrar quem acionou
+    const userPayload = {
+      userId: user?.id,
+      userName: user?.name || "Usuário Desconhecido",
+    };
+
+    requestAction(
+      path,
+      () => setDoorAction(isOpening ? "opening" : "closing"),
+      userPayload
+    );
   };
 
   return {

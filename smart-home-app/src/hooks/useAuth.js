@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { registerUser, loginUser } from "../services/api";
+import { useAuthContext } from "../contexts/AuthContext";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { loginState, user } = useAuthContext();
 
   const validateRegister = (name, email, password, lockCode) => {
     if (!name || name.trim() === "") return "O nome é obrigatório.";
@@ -38,7 +40,6 @@ export function useAuth() {
     }
   };
 
-  // --- LOGIN REAL COM VALIDAÇÃO E CONSULTA À API ---
   const handleLogin = async (email, password, onSuccess) => {
     setError(null);
 
@@ -54,7 +55,16 @@ export function useAuth() {
 
     try {
       setLoading(true);
-      await loginUser({ email, password });
+      const res = await loginUser({ email, password });
+      
+      // Salva os dados do usuário no Contexto global
+      if (res.user) {
+        loginState(res.user);
+      } else {
+        // Fallback para dev local se backend ainda não devolver res.user
+        loginState({ name: email.split("@")[0], email });
+      }
+
       onSuccess();
     } catch (err) {
       setError(err.message);
@@ -64,6 +74,7 @@ export function useAuth() {
   };
 
   return {
+    user,
     handleRegister,
     handleLogin,
     loading,
