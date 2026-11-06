@@ -1,4 +1,5 @@
 const { mqttClient, state, LED, DOOR } = require("../config/mqtt");
+const DoorLog = require("../models/DoorLog");
 
 const getStatus = (req, res) => {
   res.json({
@@ -18,7 +19,7 @@ const turnLedOff = (req, res) => {
   res.send("LED desligado");
 };
 
-const publishDoorCommand = (command, res) => {
+const publishDoorCommand = (command, req, res) => {
   if (!mqttClient.connected) {
     return res.status(503).send("Conexão MQTT indisponível");
   }
@@ -35,13 +36,25 @@ const publishDoorCommand = (command, res) => {
   const previousAction = state.doorAction;
   state.doorAction = requestedDoorState ? "opening" : "closing";
 
-  mqttClient.publish(DOOR, command, { qos: 1 }, (error) => {
+  mqttClient.publish(DOOR, command, { qos: 1 }, async (error) => {
     if (error) {
       if (state.doorAction === (requestedDoorState ? "opening" : "closing")) {
         state.doorAction = previousAction;
       }
       console.error(`Erro ao publicar comando ${command}:`, error);
       return res.status(503).send("Não foi possível enviar o comando");
+    }
+
+    // --- SALVA O LOG NO MONGODB ---
+    try {
+      const { userId, userName } = req.body || {};
+      await DoorLog.create({
+        userId: userId || null,
+        userName: userName || "Usuário Desconhecido",
+        action: command,
+      });
+    } catch (logError) {
+      console.error("Erro ao salvar log no banco:", logError);
     }
 
     res.send(
@@ -52,8 +65,21 @@ const publishDoorCommand = (command, res) => {
   });
 };
 
-const openDoor = (req, res) => publishDoorCommand("OPEN", res);
-const closeDoor = (req, res) => publishDoorCommand("CLOSE", res);
+const openDoor = (req, res) => publishDoorCommand("OPEN", req, res);
+const closeDoor = (req, res) => publishDoorCommand("CLOSE", req, res);
+
+// --- NOVO: BUSCAR HISTÓRICO DE ACESSOS ---
+const getDoorLogs = async (req, res) => {
+  try {
+    const logs = await DoorLog.find()
+      .sort({ createdAt: -1 }) // Mais recentes primeiro
+      .limit(50);             // Limita a 50 registros para melhor performance
+    res.json(logs);
+  } catch (error) {
+    console.error("Erro ao buscar logs da porta:", error);
+    res.status(500).json({ message: "Erro ao buscar histórico de acessos." });
+  }
+};
 
 module.exports = {
   getStatus,
@@ -61,4 +87,6 @@ module.exports = {
   turnLedOff,
   openDoor,
   closeDoor,
+  getDoorLogs,
 };
+
