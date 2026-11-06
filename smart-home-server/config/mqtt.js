@@ -40,9 +40,18 @@ mqttClient.on("message", (topic, msg) => {
   }
 });
 
+// Função injetável para acionar a luz por rotinas do servidor
+const publishLedOn = () => {
+  if (mqttClient.connected) {
+    mqttClient.publish(LED, "ON");
+  }
+};
+
 module.exports = {
   mqttClient,
   state,
   LED,
   DOOR,
+  publishLedOn,
 };
+

@@ -1,4 +1,4 @@
-export const SERVER = "http://10.68.75.140:3000";
+export const SERVER = "http://127.0.0.1:3000";
 
 export const fetchStatus = async () => {
   const response = await fetch(`${SERVER}/status`);
@@ -49,9 +49,24 @@ export const loginUser = async (credentials) => {
   return response.json();
 };
 
-// --- NOVO: BUSCAR HISTÓRICO DE ABERTURAS DA TRANCA ---
 export const fetchDoorLogs = async () => {
   const response = await fetch(`${SERVER}/door/logs`);
   if (!response.ok) throw new Error("Erro ao carregar histórico de acessos");
   return response.json();
 };
+
+// --- NOVO: SALVAR AGENDAMENTO DA LUZ ---
+export const updateLightSchedule = async (scheduleData) => {
+  const response = await fetch(`${SERVER}/led/schedule`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(scheduleData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || "Erro ao salvar agendamento");
+  }
+  return response.json();
+};
+

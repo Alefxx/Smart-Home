@@ -2,9 +2,12 @@ import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 
-export function CustomButton({ title, onPress, disabled, loading }) {
+export function CustomButton({ title, label, onPress, disabled, loading }) {
   const { colors } = useTheme();
   const isUnavailable = disabled || loading;
+  
+  // O pulo do gato: aceita tanto 'title' (novo padrão) quanto 'label' (padrão antigo)
+  const buttonText = title || label; 
 
   return (
     <TouchableOpacity
@@ -16,7 +19,7 @@ export function CustomButton({ title, onPress, disabled, loading }) {
       disabled={isUnavailable}
       activeOpacity={0.8}
     >
-      <Text style={styles.submitButtonText}>{title}</Text>
+      <Text style={styles.submitButtonText}>{buttonText}</Text>
     </TouchableOpacity>
   );
 }
@@ -40,3 +43,4 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
 });
+	

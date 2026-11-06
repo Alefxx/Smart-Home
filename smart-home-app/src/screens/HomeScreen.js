@@ -1,20 +1,21 @@
-import React from "react";
-import { SafeAreaView, Text, StyleSheet, StatusBar, View, TouchableOpacity, Alert } from "react-native";
+import React, { useState } from "react";
+import { SafeAreaView, Text, StyleSheet, StatusBar, View, TouchableOpacity, Alert, Platform } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 import { useSmartHome } from "../hooks/useSmartHome";
 import { useAuthContext } from "../contexts/AuthContext";
 
-// Importando os componentes
 import { Header } from "../components/Header";
 import { LedCard } from "../components/LedCard";
 import { DoorCard } from "../components/DoorCard";
 import { ActionGridButton } from "../components/ActionGridButton";
 import { Footer } from "../components/Footer";
+import { LightScheduleModal } from "../components/LightScheduleModal";
 
 export function HomeScreen({ navigation }) {
   const { dark, toggleTheme, colors } = useTheme();
   const { led, door, doorAction, online, loading, toggleLed, operateDoor } = useSmartHome();
   const { logoutState } = useAuthContext();
+  const [isScheduleModalVisible, setIsScheduleModalVisible] = useState(false);
 
   const handleLogout = () => {
     Alert.alert(
@@ -24,21 +25,24 @@ export function HomeScreen({ navigation }) {
         { text: "Cancelar", style: "cancel" },
         { 
           text: "Sair", 
-          style: "destructive", // No iOS o texto fica vermelho para alertar ação destrutiva
+          style: "destructive", 
           onPress: () => {
-            logoutState(); // Limpa o usuário logado no Context
-            navigation.replace("Login"); // Replace impede que o usuário volte com o botão do celular
+            logoutState(); 
+            navigation.replace("Login"); 
           } 
         }
       ]
     );
   };
 
+  const handleSaveSchedule = (scheduleData) => {
+    Alert.alert("Agendamento Salvo", `A luz acenderá automaticamente às ${scheduleData.time}`);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
-      <StatusBar barStyle={dark ? "light-content" : "dark-content"} />
+      <StatusBar barStyle={dark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
       
-      {/* Botão de Sair/Voltar no Topo */}
       <View style={styles.topBar}>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn} activeOpacity={0.7}>
           <Text style={[styles.backIcon, { color: colors.muted }]}>←</Text>
@@ -70,6 +74,7 @@ export function HomeScreen({ navigation }) {
           online={online} 
           loading={loading} 
           onToggle={toggleLed} 
+          onSettingsPress={() => setIsScheduleModalVisible(true)}
         />
         <DoorCard 
           door={door} 
@@ -81,6 +86,12 @@ export function HomeScreen({ navigation }) {
       </View>
       
       <Footer />
+
+      <LightScheduleModal
+        visible={isScheduleModalVisible}
+        onClose={() => setIsScheduleModalVisible(false)}
+        onSave={handleSaveSchedule}
+      />
       
     </SafeAreaView>
   );
@@ -90,11 +101,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 8,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 15 : 15,
   },
   topBar: {
     flexDirection: "row",
-    justifyContent: "flex-end", // Alinha o botão de sair à direita (ou mude para flex-start para ficar à esquerda)
+    justifyContent: "flex-end",
     marginBottom: 8,
   },
   logoutBtn: {
@@ -102,7 +113,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: "rgba(0,0,0,0.03)", // Fundo sutil
+    backgroundColor: "rgba(0,0,0,0.03)", 
     borderRadius: 20,
   },
   backIcon: {
@@ -133,3 +144,4 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+

@@ -1,5 +1,8 @@
 const { mqttClient, state, LED, DOOR } = require("../config/mqtt");
 const DoorLog = require("../models/DoorLog");
+// Caminho corrigido com "../" para sair da pasta controllers e entrar na pasta models
+const LightSchedule = require("../models/LightSchedule");
+const { updateScheduleCache } = require("../services/cronService");
 
 const getStatus = (req, res) => {
   res.json({
@@ -17,6 +20,29 @@ const turnLedOn = (req, res) => {
 const turnLedOff = (req, res) => {
   mqttClient.publish(LED, "OFF");
   res.send("LED desligado");
+};
+
+const updateSchedule = async (req, res) => {
+  try {
+    const { enabled, time } = req.body;
+
+    let schedule = await LightSchedule.findOne();
+    
+    if (schedule) {
+      schedule.enabled = enabled;
+      schedule.time = time;
+      await schedule.save();
+    } else {
+      await LightSchedule.create({ enabled, time });
+    }
+
+    await updateScheduleCache();
+
+    res.json({ message: "Agendamento da luz atualizado com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao salvar agendamento:", error);
+    res.status(500).json({ message: "Erro interno ao salvar agendamento." });
+  }
 };
 
 const publishDoorCommand = (command, req, res) => {
@@ -45,7 +71,6 @@ const publishDoorCommand = (command, req, res) => {
       return res.status(503).send("Não foi possível enviar o comando");
     }
 
-    // --- SALVA O LOG NO MONGODB ---
     try {
       const { userId, userName } = req.body || {};
       await DoorLog.create({
@@ -68,12 +93,11 @@ const publishDoorCommand = (command, req, res) => {
 const openDoor = (req, res) => publishDoorCommand("OPEN", req, res);
 const closeDoor = (req, res) => publishDoorCommand("CLOSE", req, res);
 
-// --- NOVO: BUSCAR HISTÓRICO DE ACESSOS ---
 const getDoorLogs = async (req, res) => {
   try {
     const logs = await DoorLog.find()
-      .sort({ createdAt: -1 }) // Mais recentes primeiro
-      .limit(50);             // Limita a 50 registros para melhor performance
+      .sort({ createdAt: -1 })
+      .limit(50);
     res.json(logs);
   } catch (error) {
     console.error("Erro ao buscar logs da porta:", error);
@@ -88,5 +112,6 @@ module.exports = {
   openDoor,
   closeDoor,
   getDoorLogs,
+  updateSchedule,
 };
 

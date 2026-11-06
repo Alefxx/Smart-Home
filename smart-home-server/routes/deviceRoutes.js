@@ -7,6 +7,7 @@ const {
   openDoor,
   closeDoor,
   getDoorLogs,
+  updateSchedule,
 } = require("../controllers/deviceController");
 
 router.get("/status", getStatus);
@@ -14,9 +15,10 @@ router.post("/led/on", turnLedOn);
 router.post("/led/off", turnLedOff);
 router.post("/door/open", openDoor);
 router.post("/door/close", closeDoor);
-
-// --- NOVA ROTA DE LOGS ---
 router.get("/door/logs", getDoorLogs);
+
+// --- NOVA ROTA DE AGENDAMENTO ---
+router.post("/led/schedule", updateSchedule);
 
 module.exports = router;
 
